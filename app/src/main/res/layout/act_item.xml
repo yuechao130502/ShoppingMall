@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_centerInParent="true"
+    android:clipChildren="false">
+
+    <!--clipChildren默认true 设置为false则中间的childen比两边的childen大-->
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/act_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_gravity="center"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:clipChildren="false" />
+
+</FrameLayout>

@@ -1,0 +1,2 @@
+include ':app', ':banner'
+include ':alipay_demo'
