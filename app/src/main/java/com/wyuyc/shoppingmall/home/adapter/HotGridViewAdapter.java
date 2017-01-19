@@ -10,7 +10,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.wyuyc.shoppingmall.R;
 import com.wyuyc.shoppingmall.home.bean.ResultBeanData;
-import com.wyuyc.shoppingmall.utils.Contants;
+import com.wyuyc.shoppingmall.utils.Constants;
 
 import java.util.List;
 
@@ -57,7 +57,7 @@ public class HotGridViewAdapter extends BaseAdapter {
         //设置数据
         ResultBeanData.ResultBean.HotInfoBean hotInfoBean = datas.get(position);
         Glide.with(mContext)
-                .load(Contants.Base_URl_IMAGE + hotInfoBean.getFigure())
+                .load(Constants.BASE_URl_IMAGE + hotInfoBean.getFigure())
                 .into(holder.ivHot);
         holder.tvName.setText(hotInfoBean.getName());
         holder.tvPrice.setText("￥" + hotInfoBean.getCover_price());

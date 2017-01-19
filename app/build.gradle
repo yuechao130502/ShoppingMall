@@ -37,4 +37,5 @@ dependencies {
     compile 'com.github.iwgang:countdownview:2.1.2'
     compile files('libs/gson-2.7.jar')
     compile files('libs/alipaySdk-20160809.jar')
+    compile files('libs/eventbus-3.0.0.jar')
 }

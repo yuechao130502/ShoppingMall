@@ -1,5 +1,6 @@
 package com.wyuyc.shoppingmall.home.fragment;
 
+import android.content.Intent;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -12,9 +13,10 @@ import android.widget.Toast;
 import com.alibaba.fastjson.JSON;
 import com.wyuyc.shoppingmall.R;
 import com.wyuyc.shoppingmall.base.BaseFragment;
-import com.wyuyc.shoppingmall.home.adapter.HomeFragmentAdapter;
+import com.wyuyc.shoppingmall.home.adapter.HomeRecyclerAdapter;
 import com.wyuyc.shoppingmall.home.bean.ResultBeanData;
-import com.wyuyc.shoppingmall.utils.Contants;
+import com.wyuyc.shoppingmall.user.activity.MessageCenterActivity;
+import com.wyuyc.shoppingmall.utils.Constants;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
@@ -35,7 +37,7 @@ public class HomeFragment extends BaseFragment {
     private static final String TAG = HomeFragment.class.getSimpleName();
     private ResultBeanData.ResultBean resultBean;
 
-    private HomeFragmentAdapter adapter;
+    private HomeRecyclerAdapter adapter;
 
     @Override
     public View initView() {
@@ -59,7 +61,7 @@ public class HomeFragment extends BaseFragment {
      * 联网请求主页的数据
      */
     private void getDataFromNet() {
-        String url = Contants.HOME_URL;
+        String url = Constants.HOME_URL;
         OkHttpUtils
                 .get()
                 .url(url)
@@ -92,11 +94,12 @@ public class HomeFragment extends BaseFragment {
     private void processData(String json) {
         if (!TextUtils.isEmpty(json)) {
             ResultBeanData resultBeanData = JSON.parseObject(json, ResultBeanData.class);
-            resultBean = resultBeanData.getResult();
-            if (resultBean != null) {
+            this.resultBean = resultBeanData.getResult();
+//            Log.e(TAG, "processData" + resultBeanData.toString());
+            if (this.resultBean != null) {
                 //有数据
                 //设置适配器
-                adapter = new HomeFragmentAdapter(mContext,resultBean);
+                adapter = new HomeRecyclerAdapter(mContext, this.resultBean);
                 rvHome.setAdapter(adapter);
                 //设置布局管理者
                 GridLayoutManager manager = new GridLayoutManager(mContext, 1);
@@ -117,7 +120,7 @@ public class HomeFragment extends BaseFragment {
                 //没有数据
                 Log.e(TAG, "processData" + "没有数据");
             }
-            Log.e(TAG, "onResponse---首页请求成功---resultBean==" + resultBean.getBanner_info());
+            Log.e(TAG, "onResponse---首页请求成功---resultBeanData==" + this.resultBean.getBanner_info());
         }
     }
 
@@ -141,7 +144,8 @@ public class HomeFragment extends BaseFragment {
         tv_message_home.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(mContext, " 进入消息中心", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(mContext, MessageCenterActivity.class);
+                mContext.startActivity(intent);
             }
         });
     }

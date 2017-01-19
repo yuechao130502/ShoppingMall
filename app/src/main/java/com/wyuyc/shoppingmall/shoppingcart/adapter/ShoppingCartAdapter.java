@@ -2,6 +2,7 @@ package com.wyuyc.shoppingmall.shoppingcart.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -13,20 +14,19 @@ import com.wyuyc.shoppingmall.R;
 import com.wyuyc.shoppingmall.home.bean.GoodsBean;
 import com.wyuyc.shoppingmall.shoppingcart.utils.CartProvider;
 import com.wyuyc.shoppingmall.shoppingcart.view.NumberAddSubView;
-import com.wyuyc.shoppingmall.utils.Contants;
+import com.wyuyc.shoppingmall.utils.Constants;
 
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-import static android.R.string.no;
-
 /**
  * Created by yc on 2016/12/26.
  */
 public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapter.ViewHolder> {
 
+    private static final String TAG = ShoppingCartAdapter.class.getSimpleName();
     private final Context mContext;
     private final List<GoodsBean> goodsBeanList;
     private final TextView tvShopcartTotal;
@@ -35,13 +35,15 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
      * 完成状态下的checkbox
      */
     private final CheckBox cbAll;
+    private final CartProvider cartProvider;
 
-    public ShoppingCartAdapter(Context mContext, List<GoodsBean> goodsBeanList, TextView tvShopcartTotal, CheckBox checkboxAll, CheckBox cbAll) {
+    public ShoppingCartAdapter(Context mContext, List<GoodsBean> goodsBeanList, TextView tvShopcartTotal, CartProvider cartProvider, CheckBox checkboxAll, CheckBox cbAll) {
         this.mContext = mContext;
         this.goodsBeanList = goodsBeanList;
         this.tvShopcartTotal = tvShopcartTotal;
         this.checkboxAll = checkboxAll;
         this.cbAll = cbAll;
+        this.cartProvider = cartProvider;
         showTotalPrice();
         //设置点击事件
         setListener();
@@ -57,7 +59,7 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
                 GoodsBean goodsBean = goodsBeanList.get(position);
                 //2.设置取反状态
                 goodsBean.setIsChildSelected(!goodsBean.isChildSelected());
-                CartProvider.getInstance().updataData(goodsBean); //保存状态
+                cartProvider.updataData(goodsBean); //保存状态
                 //3.刷新状态
                 notifyItemChanged(position);
                 //4.校验是否全选
@@ -102,7 +104,7 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
                 goodsBean.setIsChildSelected(isCheck);
                 checkboxAll.setChecked(isCheck);
                 cbAll.setChecked(isCheck);
-                CartProvider.getInstance().updataData(goodsBean);
+                cartProvider.updataData(goodsBean);
                 notifyItemChanged(i);
             }
         }
@@ -134,7 +136,7 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
     }
 
     public void showTotalPrice() {
-        tvShopcartTotal.setText(getTotalPrice() + "");
+        tvShopcartTotal.setText("￥" + String.format("%.2f",getTotalPrice()));
     }
 
     public double getTotalPrice() {
@@ -175,7 +177,7 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
                     //内存移除
                     goodsBeanList.remove(goodsBean);
                     //保存到本地
-                    CartProvider.getInstance().deleteData(goodsBean);
+                    cartProvider.deleteData(goodsBean);
                     //刷新
                     notifyItemRemoved(i);
                     i--;
@@ -213,12 +215,13 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
 
         public void setData(final GoodsBean goodsBean, final int position) {
             Glide.with(mContext)
-                    .load(Contants.Base_URl_IMAGE + goodsBean.getFigure())
+                    .load(Constants.BASE_URl_IMAGE + goodsBean.getFigure())
                     .into(ivGov);
             cbGov.setChecked(goodsBean.isChildSelected());
             tvDescGov.setText(goodsBean.getName());
-            tvPriceGov.setText("￥" + goodsBean.getCover_price());
+            tvPriceGov.setText("￥" + String.format("%.2f",Double.valueOf(goodsBean.getCover_price())));
             //设置数字加减回调
+            Log.e(TAG, "setData----goodsBean.getNumber()====" + goodsBean.getNumber());
             numberAddSubView.setValue(goodsBean.getNumber());
             numberAddSubView.setMinValue(1);
             numberAddSubView.setMaxValue(20);
@@ -229,7 +232,7 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
                     //1.当前列表内存中
                     goodsBean.setNumber(value);
                     //2.本地更新
-                    CartProvider.getInstance().updataData(goodsBean);
+                    cartProvider.updataData(goodsBean);
                     //3.刷新适配器
                     notifyItemChanged(position);
                     //4.再次计算价格
@@ -241,7 +244,7 @@ public class ShoppingCartAdapter extends RecyclerView.Adapter<ShoppingCartAdapte
                     //1.当前列表内存中
                     goodsBean.setNumber(value);
                     //2.本地更新
-                    CartProvider.getInstance().updataData(goodsBean);
+                    cartProvider.updataData(goodsBean);
                     //3.刷新适配器
                     notifyItemChanged(position);
                     //4.再次计算价格

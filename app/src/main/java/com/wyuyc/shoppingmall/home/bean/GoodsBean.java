@@ -12,6 +12,16 @@ public class GoodsBean implements Serializable {
     private String cover_price;
     private String figure;
     private String product_id;
+    private String origin_price;
+
+    public String getOrigin_price() {
+        return origin_price;
+    }
+
+    public void setOrigin_price(String origin_price) {
+        this.origin_price = origin_price;
+    }
+
     private int number = 1;
 
     /**

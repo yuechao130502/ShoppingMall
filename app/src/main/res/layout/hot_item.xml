@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#eeee"
     android:orientation="vertical"
+    android:background="#eee"
     android:padding="10dp">
 
     <LinearLayout
@@ -20,7 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:text="这里都是买的棒棒哒"
+            android:text="热卖商品"
             android:textColor="#000" />
 
         <TextView
@@ -37,8 +37,9 @@
     <GridView
         android:id="@+id/gv_hot"
         android:layout_width="match_parent"
-        android:layout_height="1020dp"
+        android:layout_height="1115dp"
         android:layout_marginTop="10dp"
+        android:background="#fff"
         android:horizontalSpacing="10dp"
         android:numColumns="2"
         android:verticalSpacing="10dp"></GridView>

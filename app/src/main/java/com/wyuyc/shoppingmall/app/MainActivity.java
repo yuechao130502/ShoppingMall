@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.view.View;
+import android.util.Log;
 import android.widget.FrameLayout;
 import android.widget.RadioGroup;
 
@@ -15,6 +15,10 @@ import com.wyuyc.shoppingmall.home.fragment.HomeFragment;
 import com.wyuyc.shoppingmall.shoppingcart.fragment.ShoppingCartFragment;
 import com.wyuyc.shoppingmall.type.fragment.TypeFragment;
 import com.wyuyc.shoppingmall.user.fragment.UserFragment;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +32,8 @@ public class MainActivity extends FragmentActivity {
     FrameLayout frameLayout;
     @Bind(R.id.rg_main)
     RadioGroup rgMain;
+
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     /**
      * Fragment实例集合
@@ -46,6 +52,7 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        EventBus.getDefault().register(this);
         initFragment();
         initListener();
     }
@@ -82,11 +89,23 @@ public class MainActivity extends FragmentActivity {
     }
 
     /**
+     * ShoppingCartFragment的tv_empty_cart_tobuy点击时
+     * 调用该方法回到首页
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void toHome(MessageEvent event){
+        rgMain.check(R.id.rb_home);
+        switchFragment(tempFragment,fragments.get(0));
+    }
+
+    /**
      * @param fromFragment 上次显示的Fragment
      * @param nextFragment 当前正要显示的Fragment
      */
-    private void switchFragment(Fragment fromFragment, BaseFragment nextFragment) {
+    public void switchFragment(Fragment fromFragment, BaseFragment nextFragment) {
         if (tempFragment != nextFragment) {
+            Log.e(TAG, "switchFragment---tempFragment" + tempFragment);
             tempFragment = nextFragment;
             if (nextFragment != null) {
                 FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -128,5 +147,11 @@ public class MainActivity extends FragmentActivity {
         fragments.add(new CommunityFragment());
         fragments.add(new ShoppingCartFragment());
         fragments.add(new UserFragment());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }

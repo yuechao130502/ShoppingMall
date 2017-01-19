@@ -10,7 +10,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.wyuyc.shoppingmall.R;
 import com.wyuyc.shoppingmall.home.bean.ResultBeanData.ResultBean;
-import com.wyuyc.shoppingmall.utils.Contants;
+import com.wyuyc.shoppingmall.utils.Constants;
 
 import java.util.List;
 
@@ -59,7 +59,7 @@ public class ChannelGridViewAdapter extends BaseAdapter {
         ResultBean.ChannelInfoBean channelInfoBean = channel_info.get(position);
         viewHolder.tvChannel.setText(channelInfoBean.getChannel_name());
         Glide.with(mContext)
-                .load(Contants.Base_URl_IMAGE+channelInfoBean.getImage())
+                .load(Constants.BASE_URl_IMAGE +channelInfoBean.getImage())
                 .into(viewHolder.ivChannel);
         return convertView;
     }

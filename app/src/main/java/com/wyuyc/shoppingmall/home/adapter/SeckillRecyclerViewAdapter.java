@@ -11,7 +11,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.wyuyc.shoppingmall.R;
 import com.wyuyc.shoppingmall.home.bean.ResultBeanData;
-import com.wyuyc.shoppingmall.utils.Contants;
+import com.wyuyc.shoppingmall.utils.Constants;
 
 import java.util.List;
 
@@ -45,7 +45,7 @@ public class SeckillRecyclerViewAdapter extends RecyclerView.Adapter<SeckillRecy
     private void setData(ViewHolder holder, final int position) {
         ResultBeanData.ResultBean.SeckillInfoBean.ListBean listBean = list.get(position);
         Glide.with(mContext)
-                .load(Contants.Base_URl_IMAGE + listBean.getFigure())
+                .load(Constants.BASE_URl_IMAGE + listBean.getFigure())
                 .into(holder.ivFigure);
         holder.tvCoverPrice.setText(" ￥" + listBean.getCover_price());
         holder.tvOriginPrice.setText(" ￥" + listBean.getOrigin_price());

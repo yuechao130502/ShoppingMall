@@ -4,12 +4,16 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +26,15 @@ import android.widget.Toast;
 
 import com.alipay.sdk.app.PayTask;
 import com.wyuyc.shoppingmall.R;
+import com.wyuyc.shoppingmall.app.MessageEvent;
 import com.wyuyc.shoppingmall.base.BaseFragment;
 import com.wyuyc.shoppingmall.home.bean.GoodsBean;
 import com.wyuyc.shoppingmall.shoppingcart.adapter.ShoppingCartAdapter;
 import com.wyuyc.shoppingmall.shoppingcart.pay.PayResult;
 import com.wyuyc.shoppingmall.shoppingcart.pay.SignUtils;
 import com.wyuyc.shoppingmall.shoppingcart.utils.CartProvider;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -40,6 +47,8 @@ import java.util.Random;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
+import static android.R.attr.start;
 
 
 /**
@@ -59,21 +68,21 @@ public class ShoppingCartFragment extends BaseFragment {
     TextView tvShopcartTotal;
     @Bind(R.id.btn_check_out)
     Button btnCheckOut;
-    @Bind(R.id.ll_check_all)
+    @Bind(R.id.llCheckAll)
     LinearLayout llCheckAll;
-    @Bind(R.id.cb_all)
+    @Bind(R.id.cbAll)
     CheckBox cbAll;
     @Bind(R.id.btn_delete)
     Button btnDelete;
     @Bind(R.id.btn_collection)
     Button btnCollection;
-    @Bind(R.id.ll_delete)
+    @Bind(R.id.llDelete)
     LinearLayout llDelete;
     @Bind(R.id.iv_empty)
     ImageView ivEmpty;
     @Bind(R.id.tv_empty_cart_tobuy)
     TextView tvEmptyCartTobuy;
-    @Bind(R.id.ll_empty_shopcart)
+    @Bind(R.id.llEmptyShopcart)
     LinearLayout llEmptyShopcart;
 
     private ShoppingCartAdapter adapter;
@@ -87,21 +96,56 @@ public class ShoppingCartFragment extends BaseFragment {
      */
     private static final int ACTION_COMPLETE = 2;
 
+    private static final String TAG = ShoppingCartFragment.class.getSimpleName();
+
     @Override
     public View initView() {
         View view = View.inflate(mContext, R.layout.fragment_shoppingcart, null);
         ButterKnife.bind(this, view);
-        initListener();
+        Log.e(TAG, "initView" + "ShoppingCartFragment初始化");
         return view;
     }
 
-    private void initListener() {
+    @Override
+    public void initData() {
+        super.initData();
+        showData();
         //设置默认的编辑状态
         tvShopcartEdit.setTag(ACTION_EDIT);
-        tvShopcartEdit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int action = (int) v.getTag();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        showData();
+    }
+
+    /**
+     * 空购物车
+     */
+    private void emptyShoppingCart() {
+        llEmptyShopcart.setVisibility(View.VISIBLE);
+        tvShopcartEdit.setVisibility(View.GONE);
+        llDelete.setVisibility(View.GONE);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        return rootView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
+
+    @OnClick({R.id.tv_shopcart_edit, R.id.btn_check_out,  R.id.btn_delete, R.id.btn_collection, R.id.tv_empty_cart_tobuy})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.tv_shopcart_edit: //编辑--完成
+                int action = (int) view.getTag();
                 if (action == ACTION_EDIT) {
                     //切换为完成状态
                     showDelete();
@@ -109,14 +153,49 @@ public class ShoppingCartFragment extends BaseFragment {
                     //切换成编辑状态
                     hideDelete();
                 }
-            }
-        });
+                break;
+            case R.id.btn_check_out: //结算
+                pay(view);
+                break;
+            case R.id.btn_delete:
+                //删除选中的
+                adapter.deleteData();
+                //校验状态
+                adapter.checkAll();
+                //数据大小为0时
+                if (adapter.getItemCount() == 0) {
+                    emptyShoppingCart();
+                }
+                break;
+            case R.id.btn_collection: //收藏
+                Toast.makeText(mContext, "收藏", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.tv_empty_cart_tobuy:
+                EventBus.getDefault().post(new MessageEvent("",""));
+                break;
+        }
+    }
+
+
+    private void showData() {
+        CartProvider cartProvider = CartProvider.getInstance();
+        List<GoodsBean> goodsBeanList = cartProvider.getAllData();
+        if (goodsBeanList != null && goodsBeanList.size() > 0) {
+            tvShopcartEdit.setVisibility(View.VISIBLE);
+            llCheckAll.setVisibility(View.VISIBLE);
+            llEmptyShopcart.setVisibility(View.GONE);
+            adapter = new ShoppingCartAdapter(mContext, goodsBeanList, tvShopcartTotal, cartProvider, checkboxAll, cbAll);
+            recyclerview.setAdapter(adapter);
+            recyclerview.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
+        } else {
+            emptyShoppingCart();
+        }
     }
 
     private void hideDelete() {
-        //1.设置状态和文本-编辑
+        //1.设置状态和文本-编辑全部
         tvShopcartEdit.setTag(ACTION_EDIT);
-        tvShopcartEdit.setText("编辑");
+        tvShopcartEdit.setText("编辑全部");
         //2.还原勾选状态
         if (adapter != null) {
             adapter.checkAll_none(true);
@@ -141,78 +220,6 @@ public class ShoppingCartFragment extends BaseFragment {
         llDelete.setVisibility(View.VISIBLE);
         //4.结算视图隐藏
         llCheckAll.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void initData() {
-        super.initData();
-        showData();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        showData();
-    }
-
-    private void showData() {
-        List<GoodsBean> goodsBeanList = CartProvider.getInstance().getAllData();
-        if (goodsBeanList != null && goodsBeanList.size() > 0) {
-            tvShopcartEdit.setVisibility(View.VISIBLE);
-            llCheckAll.setVisibility(View.VISIBLE);
-            llEmptyShopcart.setVisibility(View.GONE);
-            adapter = new ShoppingCartAdapter(mContext, goodsBeanList, tvShopcartTotal, checkboxAll, cbAll);
-            recyclerview.setAdapter(adapter);
-            recyclerview.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.VERTICAL, false));
-        } else {
-            emptyShoppingCart();
-        }
-    }
-
-    private void emptyShoppingCart() {
-        llEmptyShopcart.setVisibility(View.VISIBLE);
-        tvShopcartEdit.setVisibility(View.GONE);
-        llDelete.setVisibility(View.GONE);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        return rootView;
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        ButterKnife.unbind(this);
-    }
-
-    @OnClick({R.id.checkbox_all, R.id.btn_check_out, R.id.cb_all, R.id.btn_delete, R.id.btn_collection, R.id.tv_empty_cart_tobuy})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.checkbox_all:
-                break;
-            case R.id.btn_check_out:
-                //结算
-                pay(view);
-                break;
-            case R.id.cb_all:
-                break;
-            case R.id.btn_delete:
-                //删除选中的
-                adapter.deleteData();
-                //校验状态
-                adapter.checkAll();
-                //数据大小为0时
-                if (adapter.getItemCount() == 0) {
-                    emptyShoppingCart();
-                }
-                break;
-            case R.id.btn_collection:
-                break;
-            case R.id.tv_empty_cart_tobuy:
-                break;
-        }
     }
 
     //------支付宝支付集成-------//

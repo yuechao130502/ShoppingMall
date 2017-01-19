@@ -28,13 +28,15 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:text="编辑"
+            android:gravity="center"
+            android:text="编辑全部"
+            android:background="@drawable/text_yellow_selector"
             android:textColor="#303235" />
     </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="5dp"
+        android:layout_height="3dp"
         android:background="#eeee" />
 
     <FrameLayout
@@ -50,13 +52,13 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerview"
                 android:layout_width="match_parent"
-                android:layout_weight="1"
                 android:layout_height="0dp"
+                android:layout_weight="1"
                 android:background="#eee" />
 
 
             <LinearLayout
-                android:id="@+id/ll_check_all"
+                android:id="@+id/llCheckAll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#fff"
@@ -80,6 +82,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:padding="10dp"
                     android:text="合计:"
                     android:textColor="#303235"
@@ -89,6 +92,7 @@
                     android:id="@+id/tv_shopcart_total"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:layout_weight="1"
                     android:padding="10dp"
                     android:text="￥0.00"
@@ -105,7 +109,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/ll_delete"
+                android:id="@+id/llDelete"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="#fff"
@@ -114,7 +118,7 @@
                 android:visibility="gone">
 
                 <CheckBox
-                    android:id="@+id/cb_all"
+                    android:id="@+id/cbAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"

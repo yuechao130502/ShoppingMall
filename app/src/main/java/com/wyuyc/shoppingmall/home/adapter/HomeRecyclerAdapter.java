@@ -19,9 +19,11 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.wyuyc.shoppingmall.R;
 import com.wyuyc.shoppingmall.app.GoodsInfoActivity;
+import com.wyuyc.shoppingmall.home.activity.BannerGoodsListActivity;
+import com.wyuyc.shoppingmall.home.activity.ChannelGoodsListActivity;
 import com.wyuyc.shoppingmall.home.bean.GoodsBean;
 import com.wyuyc.shoppingmall.home.bean.ResultBeanData;
-import com.wyuyc.shoppingmall.utils.Contants;
+import com.wyuyc.shoppingmall.utils.Constants;
 import com.youth.banner.Banner;
 import com.youth.banner.BannerConfig;
 import com.youth.banner.Transformer;
@@ -30,6 +32,7 @@ import com.youth.banner.loader.ImageLoaderInterface;
 import com.zhy.magicviewpager.transformer.AlphaPageTransformer;
 import com.zhy.magicviewpager.transformer.ScaleInTransformer;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,9 +44,9 @@ import java.util.List;
  * Created by yc on 2016/12/22.
  */
 
-public class HomeFragmentAdapter extends RecyclerView.Adapter {
+public class HomeRecyclerAdapter extends RecyclerView.Adapter {
 
-    private static final String TAG = HomeFragmentAdapter.class.getSimpleName();
+    private static final String TAG = HomeRecyclerAdapter.class.getSimpleName();
 
     /**
      *  适配器的五种类型
@@ -72,7 +75,6 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
      * 热卖
      */
     public static final int HOT = 5;
-    private static final String GOODS_BEAN = "goodsBean";
     private TextView tvTime;
     private Context mContext;
     /**
@@ -108,7 +110,8 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
         }
     };
 
-    public HomeFragmentAdapter(Context mContext, ResultBeanData.ResultBean resultBean) {
+
+    public HomeRecyclerAdapter(Context mContext, ResultBeanData.ResultBean resultBean) {
         this.mContext = mContext;
         this.resultBean = resultBean;
         mLayoutInflater = LayoutInflater.from(mContext);
@@ -200,7 +203,11 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
             gv_channel.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Toast.makeText(mContext, "position=" + position, Toast.LENGTH_SHORT).show();
+                    if (position <= 8) {
+                        Intent intent = new Intent(mContext, ChannelGoodsListActivity.class);
+                        intent.putExtra("position",position);
+                        mContext.startActivity(intent);
+                    }
                 }
             });
         }
@@ -232,7 +239,7 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
                     .setImageLoader(new ImageLoaderInterface() { //设置图片加载器
                         @Override
                         public void displayImage(Context context, Object path, View imageView) {
-                            Glide.with(context).load(Contants.Base_URl_IMAGE + path).into((ImageView) imageView);
+                            Glide.with(context).load(Constants.BASE_URl_IMAGE + path).into((ImageView) imageView);
                         }
 
                         @Override
@@ -244,12 +251,29 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
                     .setOnBannerClickListener(new OnBannerClickListener() { //设置banner条目点击事件
                         @Override
                         public void OnBannerClick(int position) {
+                            ResultBeanData.ResultBean.BannerInfoBean bannerInfoBean = banner_info.get(position - 1);
                             //横幅广告类
-                            ResultBeanData.ResultBean.BannerInfoBean bannerInfoBean = banner_info.get(position);
-                            GoodsBean goodsBean = new GoodsBean();
-                            goodsBean.setFigure(bannerInfoBean.getImage());
-                            startGoodsInfoActivity(goodsBean);
-                            Toast.makeText(mContext, "position = " + position, Toast.LENGTH_SHORT).show();
+                            List<ResultBeanData.ResultBean.BannerInfoBean.ValueBean> valueBeanList = bannerInfoBean.getValue();
+                            //将valueBeanList的信息传给goodsBean
+                            String goodsListTitleimageUrl = bannerInfoBean.getList_title();
+                            List<GoodsBean> goodsBeanList = new ArrayList<GoodsBean>();
+                            if (valueBeanList != null && valueBeanList.size() > 0) {
+                                for (int i = 0; i < valueBeanList.size(); i++) {
+                                    ResultBeanData.ResultBean.BannerInfoBean.ValueBean valueBean = valueBeanList.get(i);
+                                    GoodsBean goodsBean = new GoodsBean();
+                                    goodsBean.setFigure(valueBean.getFigure());
+                                    goodsBean.setCover_price(valueBean.getCover_price());
+                                    goodsBean.setName(valueBean.getName());
+                                    goodsBean.setProduct_id(valueBean.getProduct_id());
+                                    goodsBeanList.add(goodsBean);
+                                }
+                            }
+                            //用intent携带数据跳转到GoodsListInfoActivity
+                            //携带数据的类需实现Serializable接口
+                            Intent intent = new Intent(mContext, BannerGoodsListActivity.class);
+                            intent.putExtra(Constants.GOODS_BEAN, (Serializable) goodsBeanList);
+                            intent.putExtra(Constants.GOODSLIST_TITLE, goodsListTitleimageUrl);
+                            mContext.startActivity(intent);
                         }
                     })
                     .start(); //banner设置方法全部调用完毕时最后调用
@@ -264,7 +288,7 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
                 @Override
                 public void OnLoadImage(ImageView view, Object url) {
                     //联网请求图片-Glide
-                    Glide.with(mContext).load(Contants.Base_URl_IMAGE + url).into(view);
+                    Glide.with(mContext).load(Constants.BASE_URl_IMAGE + url).into(view);
                 }
             });
             //设置点击事件
@@ -279,7 +303,7 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
 
     private void startGoodsInfoActivity(GoodsBean goodsBean) {
         Intent intent = new Intent(mContext, GoodsInfoActivity.class);
-        intent.putExtra(GOODS_BEAN,goodsBean);
+        intent.putExtra(Constants.GOODS_BEAN, goodsBean);
         mContext.startActivity(intent);
     }
 
@@ -304,20 +328,6 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
             act_viewpager.setPageTransformer(true, new AlphaPageTransformer(new ScaleInTransformer()));
             //绑定数据
             act_viewpager.setAdapter(new ActViewPagerAdapter(mContext, act_info));
-            act_viewpager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                @Override
-                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                }
-
-                @Override
-                public void onPageSelected(int position) {
-                    Toast.makeText(mContext, "position:" + position, Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onPageScrollStateChanged(int state) {
-                }
-            });
         }
     }
 
@@ -337,7 +347,7 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
 
         public void setData(final ResultBeanData.ResultBean.SeckillInfoBean seckill_info) {
             final List<ResultBeanData.ResultBean.SeckillInfoBean.ListBean> list = seckill_info.getList();
-            adapter = new SeckillRecyclerViewAdapter(mContext,list);
+            adapter = new SeckillRecyclerViewAdapter(mContext, list);
             rv_seckill.setAdapter(adapter);
             //设置布局管理器
             rv_seckill.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false));
@@ -359,6 +369,12 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
             //计算秒杀倒计时
             getCountDown();
             handler.sendEmptyMessageDelayed(0, 1000);
+            tvMore.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(mContext, "查看更多", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         private void getCountDown() {
@@ -400,6 +416,12 @@ public class HomeFragmentAdapter extends RecyclerView.Adapter {
                     goodsBean.setName(recommendInfoBean.getName());
                     goodsBean.setProduct_id(recommendInfoBean.getProduct_id());
                     startGoodsInfoActivity(goodsBean);
+                }
+            });
+            tv_more_recommend.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(mContext, "查看更多", Toast.LENGTH_SHORT).show();
                 }
             });
         }

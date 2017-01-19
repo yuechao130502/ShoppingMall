@@ -109,7 +109,7 @@ public class CartProvider {
             tempCart.setNumber(tempCart.getNumber() + goodsBean.getNumber());
         } else {
             tempCart = goodsBean;
-            tempCart.setNumber(1);
+            tempCart.setNumber(goodsBean.getNumber());
         }
         //同步到内存中
         sparseArray.put(Integer.parseInt(tempCart.getProduct_id()), tempCart);

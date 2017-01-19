@@ -10,7 +10,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.wyuyc.shoppingmall.R;
 import com.wyuyc.shoppingmall.home.bean.ResultBeanData;
-import com.wyuyc.shoppingmall.utils.Contants;
+import com.wyuyc.shoppingmall.utils.Constants;
 
 import java.util.List;
 
@@ -58,7 +58,7 @@ public class RecommendGridViewAdapter extends BaseAdapter {
         ResultBeanData.ResultBean.RecommendInfoBean recommendInfoBean = datas.get(position);
 
         Glide.with(mContext)
-                .load(Contants.Base_URl_IMAGE + recommendInfoBean.getFigure())
+                .load(Constants.BASE_URl_IMAGE + recommendInfoBean.getFigure())
                 .into(holder.ivRecommend);
         holder.tvName.setText(recommendInfoBean.getName());
         holder.tvPrice.setText("￥" + recommendInfoBean.getCover_price());
